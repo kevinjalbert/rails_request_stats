@@ -1,5 +1,10 @@
 # RailsRequestStats
 
+[![Gem Version](https://badge.fury.io/rb/rails_request_stats.svg)](https://badge.fury.io/rb/rails_request_stats)
+[![Build Status](https://travis-ci.org/kevinjalbert/rails_request_stats.svg?branch=master)](https://travis-ci.org/kevinjalbert/rails_request_stats)
+[![Code Climate](https://codeclimate.com/github/kevinjalbert/rails_request_stats/badges/gpa.svg)](https://codeclimate.com/github/kevinjalbert/rails_request_stats)
+[![Test Coverage](https://codeclimate.com/github/kevinjalbert/rails_request_stats/badges/coverage.svg)](https://codeclimate.com/github/kevinjalbert/rails_request_stats/coverage)
+
 During development have you ever:
 
 * Wondered how many SQL queries occurred during a request?
