@@ -10,20 +10,20 @@ describe RailsRequestStats::Report do
     RailsRequestStats::RequestStats.new(action: action, format: format, method: method, path: path)
   end
 
-  let(:categories) { [:view_runtime, :db_runtime, :query_count, :cached_query_count] }
+  let(:categories) { [:view_runtime, :db_runtime, :query_count, :cached_query_count, :cache_read_count] }
   let(:stat_values) { [5, 20, 10] }
 
   subject { described_class.new(request_stats) }
 
   before do
     stat_values.each do |value|
-      request_stats.add_stats(value, value, value, value)
+      request_stats.add_stats(value, value, value, value, value)
     end
   end
 
   describe '#report_text' do
     it 'returns report_text of last added stats' do
-      expected_report_text = '[RailsRequestStats] (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | query_count: 10 | cached_query_count: 10)'
+      expected_report_text = '[RailsRequestStats] (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | query_count: 10 | cached_query_count: 10 | cache_read_count: 10)'
       expect(subject.report_text).to eq(expected_report_text)
     end
   end
