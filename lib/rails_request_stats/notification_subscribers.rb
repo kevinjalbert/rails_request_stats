@@ -4,12 +4,14 @@ module RailsRequestStats
     CACHE_NAME = 'CACHE'.freeze
 
     attr_reader :query_count,
+                :cache_read_count,
                 :cached_query_count,
                 :requests
 
     def self.reset_query_counts
       @query_count = 0
       @cached_query_count = 0
+      @cache_read_count = 0
     end
     reset_query_counts
 
@@ -30,10 +32,18 @@ module RailsRequestStats
       handle_process_action_event(args.extract_options!)
     end
 
+    ActiveSupport::Notifications.subscribe('cache_read.active_support') do |*args|
+      handle_cache_read_event(args.extract_options!)
+    end
+
     def self.at_exit_handler
       @requests.each_value do |request_stats|
         Rails.logger.info { Report.new(request_stats).exit_report_text }
       end
+    end
+
+    def self.handle_cache_read_event(event)
+      @cache_read_count += 1
     end
 
     def self.handle_sql_event(event)
@@ -47,7 +57,7 @@ module RailsRequestStats
       request_key = { action: event[:action], format: event[:format], method: event[:method], path: event[:path] }
 
       request_stats = @requests[request_key] || RequestStats.new(request_key)
-      request_stats.add_stats(event[:view_runtime], event[:db_runtime], @query_count, @cached_query_count)
+      request_stats.add_stats(event[:view_runtime], event[:db_runtime], @query_count, @cached_query_count, @cache_read_count)
 
       @requests[request_key] = request_stats
       reset_query_counts

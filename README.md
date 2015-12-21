@@ -35,7 +35,7 @@ gem 'rails_request_stats', group: :development
 Within the console ./log/development.log you should start seeing the following statement appearing at the end of processing a request:
 
 ```
-[RailsRequestStats] (AVG view_runtime: 163.655ms | AVG db_runtime: 15.465ms | query_count: 9 | cached_query_count: 0)
+[RailsRequestStats] (AVG view_runtime: 163.655ms | AVG db_runtime: 15.465ms | query_count: 9 | cached_query_count: 0 | cache_read_count: 0)
 ```
 
 Finally when you exit the application's server, you should see a report of all the data captured:

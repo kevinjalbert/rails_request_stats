@@ -13,8 +13,9 @@ module RailsRequestStats
       avg_db_runtime = "AVG db_runtime: #{format_number(avg_stat(:db_runtime))}ms"
       query_count = "query_count: #{format_number(last_stat(:query_count))}"
       cached_query_count = "cached_query_count: #{format_number(last_stat(:cached_query_count))}"
+      cache_read_count = "cache_read_count: #{format_number(last_stat(:cache_read_count))}"
 
-      "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, query_count, cached_query_count].join(' | ')})"
+      "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, query_count, cached_query_count, cache_read_count].join(' | ')})"
     end
 
     def exit_report_text
