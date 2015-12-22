@@ -16,9 +16,11 @@ During development have you ever:
 
 ## How this Works
 
-`RailsRequestStats::NotificationSubscribers` when required will subscribe to the `sql.active_record`, and `process_action.action_controller` `ActionSupport::Notifications`.
+`RailsRequestStats::NotificationSubscribers` when required will subscribe to the `sql.active_record`, `start_processing.action_controller`, and `process_action.action_controller` `ActionSupport::Notifications`.
 
-The `sql.active_record` event allow us to count each SQL query that passes though ActiveRecord, which we count internally. The `process_action.action_controller` event provides us runtime information along with identifying controller action details. At this point we are able to synthesis the query information and runtime information and store them internally in running collection of `RailsRequestStats::RequestStats` objects.
+ * The `sql.active_record` event allow us to count each SQL query that passes though ActiveRecord, which we count internally.
+ * The `start_processing.action_controller` event allows us to clear iternal counts, as well as perform a `GC.start` and capturing the total number of objects residing in the `ObjectSpace`.
+ * The `process_action.action_controller` event provides us runtime information along with identifying controller action details, we even determine the number of generated objects since the start of processing the action. At this point we are able to synthesis the query information and runtime information and store them internally in running collection of `RailsRequestStats::RequestStats` objects.
 
 **Note** the data collection is tracked and stored in class-level instance variables. Thus this is not threadsafe, as no concurrency mechanisms are used (i.e., mutex). For non-threaded and forking application servers this should be fine.
 
@@ -35,15 +37,15 @@ gem 'rails_request_stats', group: :development
 Within the console ./log/development.log you should start seeing the following statement appearing at the end of processing a request:
 
 ```
-[RailsRequestStats] (AVG view_runtime: 163.655ms | AVG db_runtime: 15.465ms | query_count: 9 | cached_query_count: 0)
+[RailsRequestStats] (AVG view_runtime: 163.655ms | AVG db_runtime: 15.465ms | AVG generated_object_count: 14523 | query_count: 9 | cached_query_count: 0)
 ```
 
 Finally when you exit the application's server, you should see a report of all the data captured:
 
 ```
-[RailsRequestStats] INDEX:html "/users" (AVG view_runtime: 128.492ms | AVG db_runtime: 9.186ms | MIN query_count: 8 | MAX query_count: 9) with 4 data points
-[RailsRequestStats] SHOW:html "/users/2" (AVG view_runtime: 13.0429ms | AVG db_runtime: 1.69033ms | MIN query_count: 2 | MAX query_count: 2) with 3 data points
-[RailsRequestStats] SHOW:html "/users/2?test=1&blah=2" (AVG view_runtime: 17.8252ms | AVG db_runtime: 1.621ms | MIN query_count: 2 | MAX query_count: 2) with 1 data points
+[RailsRequestStats] INDEX:html "/users" (AVG view_runtime: 128.492ms | AVG db_runtime: 9.186ms | AVG generated_object_count: 25529 | MIN query_count: 8 | MAX query_count: 9) from 4 requests
+[RailsRequestStats] SHOW:html "/users/2" (AVG view_runtime: 13.0429ms | AVG db_runtime: 1.69033ms | AVG generated_object_count: 14523 | MIN query_count: 2 | MAX query_count: 2) from 3 requests
+[RailsRequestStats] SHOW:html "/users/2?test=1&blah=2" (AVG view_runtime: 17.8252ms | AVG db_runtime: 1.621ms | AVG generated_object_count: 18511 | MIN query_count: 2 | MAX query_count: 2) from 1 requests
 ```
 
 ## Customizing Outputs

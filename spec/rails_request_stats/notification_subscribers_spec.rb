@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe RailsRequestStats::NotificationSubscribers do
   before(:each) do
-    described_class.reset_query_counts
+    described_class.reset_counts
     described_class.reset_requests
   end
 
@@ -32,7 +32,23 @@ describe RailsRequestStats::NotificationSubscribers do
     end
   end
 
-  describe 'process_action.action_controller subscription works' do
+  describe 'start_processing.action_controller subscription' do
+    it 'receives event' do
+      data = {
+        controller: 'UsersController',
+        action: 'index',
+        params: { 'controller' => 'users', 'action' => 'index' },
+        format: :html,
+        method: 'GET',
+        path: '/users'
+      }
+
+      expect(described_class).to receive(:handle_start_processing_event).with(data)
+      ActiveSupport::Notifications.instrument('start_processing.action_controller', data)
+    end
+  end
+
+  describe 'process_action.action_controller subscription' do
     it 'receives event' do
       data = {
         controller: 'UsersController',
@@ -98,6 +114,33 @@ describe RailsRequestStats::NotificationSubscribers do
     end
   end
 
+  describe '.handle_start_processing_event' do
+    it 'processes controller action event' do
+      action = 'index'
+      format = :html
+      method = 'GET'
+      path = '/users'
+      object_count = 1000
+
+      event = {
+        controller: 'UsersController',
+        action: action,
+        params: { 'controller' => 'users', 'action' => action },
+        format: format,
+        method: method,
+        path: path
+      }
+
+      allow(described_class).to receive(:total_object_count) { object_count }
+      expect(described_class).to receive(:reset_counts).once
+      expect(GC).to receive(:start).once
+
+      described_class.handle_start_processing_event(event)
+
+      expect(described_class.instance_variable_get('@before_action_object_count')).to eq(object_count)
+    end
+  end
+
   describe '.handle_process_action_event' do
     it 'processes controller action event' do
       action = 'index'
@@ -106,6 +149,8 @@ describe RailsRequestStats::NotificationSubscribers do
       path = '/users'
       view_runtime = 175.11533110229672
       db_runtime = 15.542000000000002
+      before_object_count = 1000
+      after_object_count = 1500
 
       event = {
         controller: 'UsersController',
@@ -119,7 +164,8 @@ describe RailsRequestStats::NotificationSubscribers do
         db_runtime: db_runtime
       }
 
-      expect(described_class).to receive(:reset_query_counts).once
+      described_class.instance_variable_set('@before_action_object_count', before_object_count)
+      allow(described_class).to receive(:total_object_count) { after_object_count }
 
       described_class.handle_process_action_event(event)
       requests = described_class.instance_variable_get('@requests')
@@ -128,6 +174,7 @@ describe RailsRequestStats::NotificationSubscribers do
       expect(requests.values.first).to be_a(RailsRequestStats::RequestStats)
       expect(requests.values.first.view_runtime_collection).to eq([view_runtime])
       expect(requests.values.first.db_runtime_collection).to eq([db_runtime])
+      expect(requests.values.first.generated_object_count_collection).to eq([(after_object_count - before_object_count)])
     end
   end
 end

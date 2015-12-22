@@ -8,7 +8,8 @@ module RailsRequestStats
                 :view_runtime_collection,
                 :db_runtime_collection,
                 :query_count_collection,
-                :cached_query_count_collection
+                :cached_query_count_collection,
+                :generated_object_count_collection
 
     def initialize(key)
       @action = key[:action]
@@ -20,13 +21,15 @@ module RailsRequestStats
       @db_runtime_collection = []
       @query_count_collection = []
       @cached_query_count_collection = []
+      @generated_object_count_collection = []
     end
 
-    def add_stats(view_runtime, db_runtime, query_count, cached_query_count)
+    def add_stats(view_runtime, db_runtime, query_count, cached_query_count, generated_object_count)
       @view_runtime_collection << view_runtime.to_f
       @db_runtime_collection << db_runtime.to_f
       @query_count_collection << query_count
       @cached_query_count_collection << cached_query_count
+      @generated_object_count_collection << generated_object_count
     end
   end
 end
