@@ -17,20 +17,20 @@ describe RailsRequestStats::Report do
 
   before do
     stat_values.each do |value|
-      request_stats.add_stats(value, value, value, value)
+      request_stats.add_stats(value, value, value, value, value)
     end
   end
 
   describe '#report_text' do
     it 'returns report_text of last added stats' do
-      expected_report_text = '[RailsRequestStats] (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | query_count: 10 | cached_query_count: 10)'
+      expected_report_text = '[RailsRequestStats] (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | AVG generated_object_count: 11.6667 | query_count: 10 | cached_query_count: 10)'
       expect(subject.report_text).to eq(expected_report_text)
     end
   end
 
   describe '#exit_report_text' do
     it 'returns exit_report_text of request stats' do
-      expected_exit_report_text = '[RailsRequestStats] INDEX:html "/users" (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | MIN query_count: 5 | MAX query_count: 20) from 3 requests'
+      expected_exit_report_text = '[RailsRequestStats] INDEX:html "/users" (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | AVG generated_object_count: 11.6667 | MIN query_count: 5 | MAX query_count: 20) from 3 requests'
       expect(subject.exit_report_text).to eq(expected_exit_report_text)
     end
   end
