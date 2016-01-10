@@ -3,11 +3,13 @@ module RailsRequestStats
     SCHEMA_NAME = 'SCHEMA'.freeze
     CACHE_NAME = 'CACHE'.freeze
 
-    attr_reader :query_count,
-                :cached_query_count,
-                :before_object_space,
-                :after_object_space,
-                :requests
+    class << self
+      attr_accessor :query_count,
+                    :cached_query_count,
+                    :before_object_space,
+                    :after_object_space
+                    :requests
+    end
 
     def self.reset_counts
       @query_count = 0
