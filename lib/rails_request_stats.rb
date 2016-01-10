@@ -1,7 +1,4 @@
-require 'rails_request_stats/version'
-require 'rails_request_stats/request_stats'
-require 'rails_request_stats/report'
-require 'rails_request_stats/notification_subscribers'
+Dir.glob(File.dirname(__FILE__) + '/**/*.rb') { |file| require file }
 
 module RailsRequestStats
 end

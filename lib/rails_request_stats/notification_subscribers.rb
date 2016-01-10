@@ -3,17 +3,19 @@ module RailsRequestStats
     SCHEMA_NAME = 'SCHEMA'.freeze
     CACHE_NAME = 'CACHE'.freeze
 
-    attr_reader :query_count,
-                :cached_query_count,
-                :before_action_object_count,
-                :generated_object_count,
-                :requests
+    class << self
+      attr_accessor :query_count,
+                    :cached_query_count,
+                    :before_object_space,
+                    :after_object_space
+                    :requests
+    end
 
     def self.reset_counts
       @query_count = 0
       @cached_query_count = 0
-      @before_action_object_count = 0
-      @generated_object_count = 0
+      @before_object_space = {}
+      @after_object_space = {}
     end
     reset_counts
 
@@ -55,28 +57,29 @@ module RailsRequestStats
       reset_counts
 
       GC.start
-      @before_action_object_count = total_object_count
+      GC.disable
+
+      @before_object_space = ObjectSpace.count_objects(@before_object_space)
     end
 
     def self.handle_process_action_event(event)
-      @generated_object_count = total_object_count - @before_action_object_count
+      @after_object_space = ObjectSpace.count_objects(@after_object_space)
+
+      GC.enable
 
       request_key = { action: event[:action], format: event[:format], method: event[:method], path: event[:path] }
-
       request_stats = @requests[request_key] || RequestStats.new(request_key)
-      request_stats.add_stats(event[:view_runtime], event[:db_runtime], @query_count, @cached_query_count, @generated_object_count)
+      @requests[request_key] = request_stats.tap do |stats|
+        stats.add_database_query_stats(@query_count, @cached_query_count)
+        stats.add_object_space_stats(@before_object_space, @after_object_space)
+        stats.add_runtime_stats(event[:view_runtime], event[:db_runtime])
+      end
 
-      @requests[request_key] = request_stats
-
-      Rails.logger.info { Report.new(request_stats).report_text }
+      print_report(request_stats)
     end
 
-    class << self
-      private
-
-      def total_object_count
-        ObjectSpace.count_objects.select { |k, v| k.to_s.start_with?('T_') }.values.reduce(:+)
-      end
+    def self.print_report(request_stats)
+      Rails.logger.info { Report.new(request_stats).report_text }
     end
   end
 end

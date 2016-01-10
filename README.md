@@ -19,7 +19,7 @@ During development have you ever:
 `RailsRequestStats::NotificationSubscribers` when required will subscribe to the `sql.active_record`, `start_processing.action_controller`, and `process_action.action_controller` `ActionSupport::Notifications`.
 
  * The `sql.active_record` event allow us to count each SQL query that passes though ActiveRecord, which we count internally.
- * The `start_processing.action_controller` event allows us to clear iternal counts, as well as perform a `GC.start` and capturing the total number of objects residing in the `ObjectSpace`.
+ * The `start_processing.action_controller` event allows us to clear iternal counts, as well as perform a `GC.start` and capturing the count of objects residing in the `ObjectSpace`.
  * The `process_action.action_controller` event provides us runtime information along with identifying controller action details, we even determine the number of generated objects since the start of processing the action. At this point we are able to synthesis the query information and runtime information and store them internally in running collection of `RailsRequestStats::RequestStats` objects.
 
 **Note** the data collection is tracked and stored in class-level instance variables. Thus this is not threadsafe, as no concurrency mechanisms are used (i.e., mutex). For non-threaded and forking application servers this should be fine.
@@ -49,6 +49,21 @@ Finally when you exit the application's server, you should see a report of all t
 ```
 
 ## Customizing Outputs
+
+### Memory Stats
+By setting the following class variable within in an initializer (`./config/initializers/rails_request_stats.rb`):
+
+```ruby
+RailsRequestStats::Report.print_memory_stats = true
+```
+
+You can see the *generated objects* within the `ObjectSpace` for individual requests:
+
+```
+[RailsRequestStats] (AVG view_runtime: 93.7252ms | AVG db_runtime: 8.66075ms | AVG generated_object_count: 125282 | query_count: 8 | cached_query_count: 0 | generated_objects: {:total_generated_objects=>111878, :object=>921, :class=>35, :module=>0, :float=>0, :string=>49501, :regexp=>1556, :array=>17855, :hash=>2087, :struct=>103, :bignum=>0, :file=>0, :data=>37682, :match=>373, :complex=>0, :node=>1688, :iclass=>0})
+```
+
+### Override Reports
 
 You can manually override the output by monkey-patching in an initializer (`./config/initializers/rails_request_stats.rb`):
 
@@ -81,4 +96,3 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/kevinj
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-
