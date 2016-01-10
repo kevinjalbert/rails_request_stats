@@ -5,11 +5,9 @@ module RailsRequestStats
                 :method,
                 :path,
 
-                :view_runtime_collection,
-                :db_runtime_collection,
-                :query_count_collection,
-                :cached_query_count_collection,
-                :generated_object_count_collection
+                :database_query_stats,
+                :object_space_stats,
+                :runtime_stats
 
     def initialize(key)
       @action = key[:action]
@@ -17,19 +15,21 @@ module RailsRequestStats
       @method = key[:method]
       @path = key[:path]
 
-      @view_runtime_collection = []
-      @db_runtime_collection = []
-      @query_count_collection = []
-      @cached_query_count_collection = []
-      @generated_object_count_collection = []
+      @database_query_stats = Stats::DatabaseQueryStats.new
+      @object_space_stats = Stats::ObjectSpaceStats.new
+      @runtime_stats = Stats::RuntimeStats.new
     end
 
-    def add_stats(view_runtime, db_runtime, query_count, cached_query_count, generated_object_count)
-      @view_runtime_collection << view_runtime.to_f
-      @db_runtime_collection << db_runtime.to_f
-      @query_count_collection << query_count
-      @cached_query_count_collection << cached_query_count
-      @generated_object_count_collection << generated_object_count
+    def add_database_query_stats(query_count, cached_query_count)
+      @database_query_stats.add_stats(query_count, cached_query_count)
+    end
+
+    def add_object_space_stats(before_object_space, after_object_space)
+      @object_space_stats.add_stats(before_object_space, after_object_space)
+    end
+
+    def add_runtime_stats(view_runtime, db_runtime)
+      @runtime_stats.add_stats(view_runtime, db_runtime)
     end
   end
 end

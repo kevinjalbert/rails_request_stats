@@ -9,60 +9,51 @@ module RailsRequestStats
     end
 
     def report_text
-      avg_view_runtime = "AVG view_runtime: #{format_number(avg_stat(:view_runtime))}ms"
-      avg_db_runtime = "AVG db_runtime: #{format_number(avg_stat(:db_runtime))}ms"
-      avg_generated_object_count = "AVG generated_object_count: #{format_number(avg_stat(:generated_object_count))}"
-      query_count = "query_count: #{format_number(last_stat(:query_count))}"
-      cached_query_count = "cached_query_count: #{format_number(last_stat(:cached_query_count))}"
+      avg_view_runtime = "AVG view_runtime: #{format_number(avg(runtime_stats.view_runtime_collection))}ms"
+      avg_db_runtime = "AVG db_runtime: #{format_number(avg(runtime_stats.db_runtime_collection))}ms"
+      avg_generated_object_count = "AVG generated_object_count: #{format_number(avg(object_space_stats.generated_object_count_collection))}"
+      query_count = "query_count: #{format_number(database_query_stats.query_count_collection.last)}"
+      cached_query_count = "cached_query_count: #{format_number(database_query_stats.cached_query_count_collection.last)}"
 
       "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, avg_generated_object_count, query_count, cached_query_count].join(' | ')})"
     end
 
     def exit_report_text
       controller_information = "[RailsRequestStats] #{@request_stats.action.upcase}:#{@request_stats.format} \"#{@request_stats.path}\""
-      avg_view_runtime = "AVG view_runtime: #{format_number(avg_stat(:view_runtime))}ms"
-      avg_db_runtime = "AVG db_runtime: #{format_number(avg_stat(:db_runtime))}ms"
-      avg_generated_object_count = "AVG generated_object_count: #{format_number(avg_stat(:generated_object_count))}"
-      min_query_count = "MIN query_count: #{format_number(min_stat(:query_count))}"
-      max_query_count = "MAX query_count: #{format_number(max_stat(:query_count))}"
-      request_count = "from #{format_number(count_stat(:view_runtime))} requests"
+      avg_view_runtime = "AVG view_runtime: #{format_number(avg(runtime_stats.view_runtime_collection))}ms"
+      avg_db_runtime = "AVG db_runtime: #{format_number(avg(runtime_stats.db_runtime_collection))}ms"
+      avg_generated_object_count = "AVG generated_object_count: #{format_number(avg(object_space_stats.generated_object_count_collection))}"
+      min_query_count = "MIN query_count: #{format_number(database_query_stats.query_count_collection.min)}"
+      max_query_count = "MAX query_count: #{format_number(database_query_stats.query_count_collection.max)}"
+      request_count = "from #{format_number(runtime_stats.view_runtime_collection.size)} requests"
 
       "#{controller_information} (#{[avg_view_runtime, avg_db_runtime, avg_generated_object_count, min_query_count, max_query_count].join(' | ')}) #{request_count}"
     end
 
-    def min_stat(category)
-      category_collection(category).min
+    def total(collection)
+      collection.reduce(:+)
     end
 
-    def max_stat(category)
-      category_collection(category).max
-    end
-
-    def total_stat(category)
-      category_collection(category).reduce(:+)
-    end
-
-    def count_stat(category)
-      category_collection(category).size
-    end
-
-    def last_stat(category)
-      category_collection(category).last
-    end
-
-    def avg_stat(category)
-      total_stat(category).to_f / count_stat(category)
+    def avg(collection)
+      total(collection).to_f / collection.size
     end
 
     private
 
     def format_number(number)
-      format(FORMAT_FLAG, number)
+      format(FORMAT_FLAG, number || 0)
     end
 
-    def category_collection(category)
-      collection_variable_name = "#{category}_collection"
-      @request_stats.public_send(collection_variable_name) if @request_stats.respond_to?(collection_variable_name)
+    def database_query_stats
+      @database_query_stats ||= @request_stats.database_query_stats
+    end
+
+    def object_space_stats
+      @object_space_stats ||= @request_stats.object_space_stats
+    end
+
+    def runtime_stats
+      @runtime_stats ||= @request_stats.runtime_stats
     end
   end
 end

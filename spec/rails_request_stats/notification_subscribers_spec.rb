@@ -115,12 +115,11 @@ describe RailsRequestStats::NotificationSubscribers do
   end
 
   describe '.handle_start_processing_event' do
-    it 'processes controller action event' do
+    it 'processes start controller action event' do
       action = 'index'
       format = :html
       method = 'GET'
       path = '/users'
-      object_count = 1000
 
       event = {
         controller: 'UsersController',
@@ -131,13 +130,12 @@ describe RailsRequestStats::NotificationSubscribers do
         path: path
       }
 
-      allow(described_class).to receive(:total_object_count) { object_count }
       expect(described_class).to receive(:reset_counts).once
       expect(GC).to receive(:start).once
 
       described_class.handle_start_processing_event(event)
 
-      expect(described_class.instance_variable_get('@before_action_object_count')).to eq(object_count)
+      expect(described_class.instance_variable_get('@before_object_space').keys).not_to eq(0)
     end
   end
 
@@ -149,8 +147,48 @@ describe RailsRequestStats::NotificationSubscribers do
       path = '/users'
       view_runtime = 175.11533110229672
       db_runtime = 15.542000000000002
-      before_object_count = 1000
-      after_object_count = 1500
+      query_count = 0
+      cached_query_count = 0
+      before_object_space = {
+        TOTAL: 172415,
+        FREE: 54053,
+        T_OBJECT: 10157,
+        T_CLASS: 889,
+        T_MODULE: 31,
+        T_FLOAT: 4,
+        T_STRING: 77219,
+        T_REGEXP: 190,
+        T_ARRAY: 23234,
+        T_HASH: 2014,
+        T_STRUCT: 2,
+        T_BIGNUM: 2,
+        T_FILE: 10,
+        T_DATA: 1937,
+        T_MATCH: 107,
+        T_COMPLEX: 1,
+        T_NODE: 2528,
+        T_ICLASS: 37
+      }
+      after_object_space = {
+        TOTAL: 172415,
+        FREE: 53053,
+        T_OBJECT: 11157,
+        T_CLASS: 889,
+        T_MODULE: 31,
+        T_FLOAT: 4,
+        T_STRING: 77219,
+        T_REGEXP: 190,
+        T_ARRAY: 23234,
+        T_HASH: 2014,
+        T_STRUCT: 2,
+        T_BIGNUM: 2,
+        T_FILE: 10,
+        T_DATA: 1937,
+        T_MATCH: 107,
+        T_COMPLEX: 1,
+        T_NODE: 2528,
+        T_ICLASS: 37
+      }
 
       event = {
         controller: 'UsersController',
@@ -164,17 +202,18 @@ describe RailsRequestStats::NotificationSubscribers do
         db_runtime: db_runtime
       }
 
-      described_class.instance_variable_set('@before_action_object_count', before_object_count)
-      allow(described_class).to receive(:total_object_count) { after_object_count }
+      described_class.instance_variable_set('@before_object_space', before_object_space)
+      described_class.instance_variable_set('@after_object_space', after_object_space)
+
+      expect_any_instance_of(RailsRequestStats::RequestStats).to receive(:add_database_query_stats).with(query_count, cached_query_count).once
+      expect_any_instance_of(RailsRequestStats::RequestStats).to receive(:add_object_space_stats).with(before_object_space, after_object_space).once
+      expect_any_instance_of(RailsRequestStats::RequestStats).to receive(:add_runtime_stats).with(view_runtime, db_runtime).once
 
       described_class.handle_process_action_event(event)
-      requests = described_class.instance_variable_get('@requests')
 
+      requests = described_class.instance_variable_get('@requests')
       expect(requests.keys.first).to eq(action: action, format: format, method: method, path: path)
       expect(requests.values.first).to be_a(RailsRequestStats::RequestStats)
-      expect(requests.values.first.view_runtime_collection).to eq([view_runtime])
-      expect(requests.values.first.db_runtime_collection).to eq([db_runtime])
-      expect(requests.values.first.generated_object_count_collection).to eq([(after_object_count - before_object_count)])
     end
   end
 end
