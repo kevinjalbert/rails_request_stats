@@ -2,6 +2,11 @@ module RailsRequestStats
   class Report
     FORMAT_FLAG = '%g'.freeze
 
+    class << self
+      attr_accessor :print_memory_stats
+    end
+    self.print_memory_stats = false
+
     attr_reader :request_stats
 
     def initialize(request_stats)
@@ -14,8 +19,9 @@ module RailsRequestStats
       avg_generated_object_count = "AVG generated_object_count: #{format_number(avg(object_space_stats.generated_object_count_collection))}"
       query_count = "query_count: #{format_number(database_query_stats.query_count_collection.last)}"
       cached_query_count = "cached_query_count: #{format_number(database_query_stats.cached_query_count_collection.last)}"
+      generated_objects = self.class.print_memory_stats ? "generated_objects: #{object_space_stats.last_stats_generated_objects}" : nil
 
-      "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, avg_generated_object_count, query_count, cached_query_count].join(' | ')})"
+      "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, avg_generated_object_count, query_count, cached_query_count, generated_objects].compact.join(' | ')})"
     end
 
     def exit_report_text

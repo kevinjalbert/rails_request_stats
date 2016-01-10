@@ -92,4 +92,48 @@ describe RailsRequestStats::Stats::ObjectSpaceStats do
       expect(subject.total_object_space_count(object_space)).to eq(160000)
     end
   end
+
+  describe '#last_stats_generated_objects' do
+    it 'returns hash of last stats generated objects' do
+      expected_hash = {
+        total_generated_objects: 160000,
+        object: 10000,
+        class: 10000,
+        module: 10000,
+        float: 10000,
+        string: 10000,
+        regexp: 10000,
+        array: 10000,
+        hash: 10000,
+        struct: 10000,
+        bignum: 10000,
+        file: 10000,
+        data: 10000,
+        match: 10000,
+        complex: 10000,
+        node: 10000,
+        iclass: 10000
+      }
+
+      allow(subject).to receive(:generated_object_count_collection) { [160000] }
+      allow(subject).to receive(:object_count_collection) { [10000] }
+      allow(subject).to receive(:class_count_collection) { [10000] }
+      allow(subject).to receive(:module_count_collection) { [10000] }
+      allow(subject).to receive(:float_count_collection) { [10000] }
+      allow(subject).to receive(:string_count_collection) { [10000] }
+      allow(subject).to receive(:regexp_count_collection) { [10000] }
+      allow(subject).to receive(:array_count_collection) { [10000] }
+      allow(subject).to receive(:hash_count_collection) { [10000] }
+      allow(subject).to receive(:struct_count_collection) { [10000] }
+      allow(subject).to receive(:bignum_count_collection) { [10000] }
+      allow(subject).to receive(:file_count_collection) { [10000] }
+      allow(subject).to receive(:data_count_collection) { [10000] }
+      allow(subject).to receive(:match_count_collection) { [10000] }
+      allow(subject).to receive(:complex_count_collection) { [10000] }
+      allow(subject).to receive(:node_count_collection) { [10000] }
+      allow(subject).to receive(:iclass_count_collection) { [10000] }
+
+      expect(subject.last_stats_generated_objects).to eq(expected_hash)
+    end
+  end
 end

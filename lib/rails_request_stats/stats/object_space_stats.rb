@@ -62,6 +62,28 @@ module RailsRequestStats
       def total_object_space_count(object_space)
         object_space.select { |k, v| k.to_s.start_with?('T_') }.values.reduce(:+)
       end
+
+      def last_stats_generated_objects
+        {
+          total_generated_objects: generated_object_count_collection.last,
+          object: object_count_collection.last,
+          class: class_count_collection.last,
+          module: module_count_collection.last,
+          float: float_count_collection.last,
+          string: string_count_collection.last,
+          regexp: regexp_count_collection.last,
+          array: array_count_collection.last,
+          hash: hash_count_collection.last,
+          struct: struct_count_collection.last,
+          bignum: bignum_count_collection.last,
+          file: file_count_collection.last,
+          data: data_count_collection.last,
+          match: match_count_collection.last,
+          complex: complex_count_collection.last,
+          node: node_count_collection.last,
+          iclass: iclass_count_collection.last
+        }
+      end
     end
   end
 end
