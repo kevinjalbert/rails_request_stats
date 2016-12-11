@@ -19,6 +19,8 @@ During development have you ever:
 `RailsRequestStats::NotificationSubscribers` when required will subscribe to the `sql.active_record`, `start_processing.action_controller`, and `process_action.action_controller` `ActionSupport::Notifications`.
 
  * The `sql.active_record` event allow us to count each SQL query that passes though ActiveRecord, which we count internally.
+ * The `cache_read.active_support` event allows us to count each read and hit to the Rails cache.
+ * The `cache_fetch_hit.active_support` event allows us to count the cache hits to the Rails cache when using *fetch*.
  * The `start_processing.action_controller` event allows us to clear iternal counts, as well as perform a `GC.start` and capturing the count of objects residing in the `ObjectSpace`.
  * The `process_action.action_controller` event provides us runtime information along with identifying controller action details, we even determine the number of generated objects since the start of processing the action. At this point we are able to synthesis the query information and runtime information and store them internally in running collection of `RailsRequestStats::RequestStats` objects.
 
@@ -37,10 +39,10 @@ gem 'rails_request_stats', group: :development
 Within the console ./log/development.log you should start seeing the following statement appearing at the end of processing a request:
 
 ```
-[RailsRequestStats] (AVG view_runtime: 163.655ms | AVG db_runtime: 15.465ms | AVG generated_object_count: 14523 | query_count: 9 | cached_query_count: 0)
+[RailsRequestStats] (AVG view_runtime: 163.655ms | AVG db_runtime: 15.465ms | AVG generated_object_count: 14523 | query_count: 9 | cached_query_count: 0 | cache_read_count: 3 | cache_hit_count: 3)
 ```
 
-Finally when you exit the application's server, you should see a report of all the data captured:
+Finally when you exit the application's server, you should see a summary report of all the data captured:
 
 ```
 [RailsRequestStats] INDEX:html "/users" (AVG view_runtime: 128.492ms | AVG db_runtime: 9.186ms | AVG generated_object_count: 25529 | MIN query_count: 8 | MAX query_count: 9) from 4 requests
@@ -60,7 +62,7 @@ RailsRequestStats::Report.print_memory_stats = true
 You can see the *generated objects* within the `ObjectSpace` for individual requests:
 
 ```
-[RailsRequestStats] (AVG view_runtime: 93.7252ms | AVG db_runtime: 8.66075ms | AVG generated_object_count: 125282 | query_count: 8 | cached_query_count: 0 | generated_objects: {:total_generated_objects=>111878, :object=>921, :class=>35, :module=>0, :float=>0, :string=>49501, :regexp=>1556, :array=>17855, :hash=>2087, :struct=>103, :bignum=>0, :file=>0, :data=>37682, :match=>373, :complex=>0, :node=>1688, :iclass=>0})
+[RailsRequestStats] (AVG view_runtime: 93.7252ms | AVG db_runtime: 8.66075ms | AVG generated_object_count: 125282 | query_count: 8 | cached_query_count: 0 | cache_read_count: 3 | cache_hit_count: 3 | generated_objects: {:total_generated_objects=>111878, :object=>921, :class=>35, :module=>0, :float=>0, :string=>49501, :regexp=>1556, :array=>17855, :hash=>2087, :struct=>103, :bignum=>0, :file=>0, :data=>37682, :match=>373, :complex=>0, :node=>1688, :iclass=>0})
 ```
 
 ### Override Reports

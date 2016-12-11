@@ -38,11 +38,14 @@ describe RailsRequestStats::Report do
     allow(request_stats.object_space_stats).to receive(:node_count_collection) { collection }
     allow(request_stats.object_space_stats).to receive(:iclass_count_collection) { collection }
     allow(request_stats.object_space_stats).to receive(:generated_object_count_collection) { collection }
+
+    allow(request_stats.cache_stats).to receive(:cache_read_count_collection) { collection }
+    allow(request_stats.cache_stats).to receive(:cache_hit_count_collection) { collection }
   end
 
   describe '#report_text' do
     it 'returns report_text of last added stats' do
-      expected_report_text = '[RailsRequestStats] (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | AVG generated_object_count: 11.6667 | query_count: 20 | cached_query_count: 20)'
+      expected_report_text = '[RailsRequestStats] (AVG view_runtime: 11.6667ms | AVG db_runtime: 11.6667ms | AVG generated_object_count: 11.6667 | query_count: 20 | cached_query_count: 20 | cache_read_count: 20 | cache_hit_count: 20)'
       expect(subject.report_text).to eq(expected_report_text)
     end
   end
@@ -65,7 +68,7 @@ describe RailsRequestStats::Report do
   describe '#avg' do
     it 'returns avg stat value for specified category' do
       collection = [10, 20, 30]
-      expect_result = 60/collection.size
+      expect_result = 60 / collection.size
       expect(subject.avg(collection)).to eq(expect_result)
     end
   end

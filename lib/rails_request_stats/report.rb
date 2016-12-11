@@ -19,9 +19,11 @@ module RailsRequestStats
       avg_generated_object_count = "AVG generated_object_count: #{format_number(avg(object_space_stats.generated_object_count_collection))}"
       query_count = "query_count: #{format_number(database_query_stats.query_count_collection.last)}"
       cached_query_count = "cached_query_count: #{format_number(database_query_stats.cached_query_count_collection.last)}"
+      cache_read_count = "cache_read_count: #{format_number(cache_stats.cache_read_count_collection.last)}"
+      cache_hit_count = "cache_hit_count: #{format_number(cache_stats.cache_hit_count_collection.last)}"
       generated_objects = self.class.print_memory_stats ? "generated_objects: #{object_space_stats.last_stats_generated_objects}" : nil
 
-      "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, avg_generated_object_count, query_count, cached_query_count, generated_objects].compact.join(' | ')})"
+      "[RailsRequestStats] (#{[avg_view_runtime, avg_db_runtime, avg_generated_object_count, query_count, cached_query_count, cache_read_count, cache_hit_count, generated_objects].compact.join(' | ')})"
     end
 
     def exit_report_text
@@ -60,6 +62,10 @@ module RailsRequestStats
 
     def runtime_stats
       @runtime_stats ||= @request_stats.runtime_stats
+    end
+
+    def cache_stats
+      @cache_stats ||= @request_stats.cache_stats
     end
   end
 end

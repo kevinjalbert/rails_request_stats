@@ -7,7 +7,8 @@ module RailsRequestStats
 
                 :database_query_stats,
                 :object_space_stats,
-                :runtime_stats
+                :runtime_stats,
+                :cache_stats
 
     def initialize(key)
       @action = key[:action]
@@ -18,6 +19,7 @@ module RailsRequestStats
       @database_query_stats = Stats::DatabaseQueryStats.new
       @object_space_stats = Stats::ObjectSpaceStats.new
       @runtime_stats = Stats::RuntimeStats.new
+      @cache_stats = Stats::CacheStats.new
     end
 
     def add_database_query_stats(query_count, cached_query_count)
@@ -30,6 +32,10 @@ module RailsRequestStats
 
     def add_runtime_stats(view_runtime, db_runtime)
       @runtime_stats.add_stats(view_runtime, db_runtime)
+    end
+
+    def add_cache_stats(cache_read_count, cache_hit_count)
+      @cache_stats.add_stats(cache_read_count, cache_hit_count)
     end
   end
 end

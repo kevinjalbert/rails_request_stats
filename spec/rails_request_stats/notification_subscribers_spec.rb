@@ -139,6 +139,49 @@ describe RailsRequestStats::NotificationSubscribers do
     end
   end
 
+  describe '.handle_cache_read_event' do
+    context 'cache hit' do
+      it 'processes cache read event' do
+        event = {
+          key: 'awesome/event_serializer/1da77373824117ede4eb3359f1a56467/attributes',
+          super_operation: :fetch,
+          hit: true
+        }
+
+        described_class.handle_cache_read_event(event)
+
+        expect(described_class.instance_variable_get('@cache_read_count')).to eq(1)
+        expect(described_class.instance_variable_get('@cache_hit_count')).to eq(1)
+      end
+    end
+
+    context 'no cache hit' do
+      it 'processes cache read event' do
+        event = {
+          key: 'awesome/event_serializer/1da77373824117ede4eb3359f1a56467/attributes',
+          super_operation: :fetch
+        }
+
+        described_class.handle_cache_read_event(event)
+
+        expect(described_class.instance_variable_get('@cache_read_count')).to eq(1)
+        expect(described_class.instance_variable_get('@cache_hit_count')).to eq(0)
+      end
+    end
+  end
+
+  describe '.handle_cache_fetch_hit_event' do
+    context 'cache fetch hit' do
+      it 'processes cache fetch hit event' do
+        event = { key: 'awesome/event_serializer/1da77373824117ede4eb3359f1a56467/attributes' }
+
+        described_class.handle_cache_fetch_hit_event(event)
+
+        expect(described_class.instance_variable_get('@cache_hit_count')).to eq(1)
+      end
+    end
+  end
+
   describe '.handle_process_action_event' do
     it 'processes controller action event' do
       action = 'index'
