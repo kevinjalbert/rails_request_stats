@@ -94,7 +94,7 @@ module RailsRequestStats
         stats.add_cache_stats(@cache_read_count, @cache_hit_count)
         stats.add_database_query_stats(@query_count, @cached_query_count)
         stats.add_object_space_stats(@before_object_space, @after_object_space)
-        stats.add_runtime_stats(event[:view_runtime], event[:db_runtime])
+        stats.add_runtime_stats(event[:view_runtime] || 0, event[:db_runtime] || 0)
       end
 
       print_report(request_stats)
