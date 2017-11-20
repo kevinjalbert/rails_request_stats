@@ -5,10 +5,6 @@
 [![Code Climate](https://codeclimate.com/github/kevinjalbert/rails_request_stats/badges/gpa.svg)](https://codeclimate.com/github/kevinjalbert/rails_request_stats)
 [![Test Coverage](https://codeclimate.com/github/kevinjalbert/rails_request_stats/badges/coverage.svg)](https://codeclimate.com/github/kevinjalbert/rails_request_stats/coverage)
 
-<a target='_blank' rel='nofollow' href='https://app.codesponsor.io/link/ywjjpfdmDSqq7ihhqtALKnLV/kevinjalbert/rails_request_stats'>
-  <img alt='Sponsor' width='888' height='68' src='https://app.codesponsor.io/embed/ywjjpfdmDSqq7ihhqtALKnLV/kevinjalbert/rails_request_stats.svg' />
-</a>
-
 During development have you ever:
 
 * Wondered how many SQL queries occurred during a request?
